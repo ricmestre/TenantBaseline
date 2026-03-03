@@ -31,6 +31,11 @@ function Get-TBMonitorResult {
 
         $queryParams = [System.Collections.ArrayList]::new()
 
+        $selectProperties = "`$select=id,monitorId,tenantId,runStatus," + `
+            "runInitiationDateTime,runCompletionDateTime,driftsCount," + `
+            "errorDetails"
+        $queryParams.Add($selectProperties)
+
         if ($MonitorId) {
             $null = $queryParams.Add("`$filter=monitorId eq '$MonitorId'")
         }
@@ -39,9 +44,7 @@ function Get-TBMonitorResult {
             $null = $queryParams.Add("`$top=$Top")
         }
 
-        if ($queryParams.Count -gt 0) {
-            $uri = '{0}?{1}' -f $uri, ($queryParams -join '&')
-        }
+        $uri = '{0}?{1}' -f $uri, ($queryParams -join '&')
 
         Write-TBLog -Message ('Getting monitor results: {0}' -f $uri)
         $items = Invoke-TBGraphPagedRequest -Uri $uri
