@@ -7,11 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## UNRELEASED
 
-### Fixed
+### Changed
 
-- Property `errorDetails` is not returned by the TCM API by default, so applied
-  `$select` to `Get-TBMonitorResult` and `Get-TBSnapshot` to include it in the
-  responses
+- Added parameter `SkipPreFlightQuotaCheck` to cmdlet `New-TBSnapshot` to skip
+  warning
 
 ## [0.3.0] - 2026-02-25
 

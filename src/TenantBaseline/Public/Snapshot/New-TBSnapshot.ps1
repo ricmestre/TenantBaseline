@@ -11,8 +11,12 @@ function New-TBSnapshot {
         Optional description of the snapshot.
     .PARAMETER Resources
         Array of resource type names to include (e.g., 'microsoft.exchange.sharedmailbox').
+    .PARAMETER SkipPreFlightQuotaCheck
+        Skips the pre-flight quota check.
     .EXAMPLE
         New-TBSnapshot -DisplayName 'Weekly Snapshot' -Resources @('microsoft.exchange.sharedmailbox')
+    .EXAMPLE
+        New-TBSnapshot -DisplayName 'Weekly Snapshot' -Resources @('microsoft.exchange.sharedmailbox') -SkipPreFlightQuotaCheck
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([PSCustomObject])]
@@ -24,7 +28,10 @@ function New-TBSnapshot {
         [string]$Description,
 
         [Parameter(Mandatory = $true)]
-        [string[]]$Resources
+        [string[]]$Resources,
+
+        [Parameter()]
+        [switch]$SkipPreFlightQuotaCheck
     )
 
     $uri = '{0}/configurationSnapshots/createSnapshot' -f (Get-TBApiBaseUri)
@@ -39,15 +46,17 @@ function New-TBSnapshot {
     }
 
     if ($PSCmdlet.ShouldProcess($DisplayName, 'Create configuration snapshot')) {
-        # Pre-flight quota check
-        try {
-            $existingSnapshots = @(Get-TBSnapshot)
-            if ($existingSnapshots.Count -ge 10) {
-                Write-Warning ('Snapshot quota: {0}/12 snapshot jobs in use. Approaching the 12-job limit.' -f $existingSnapshots.Count)
+        if (!$SkipPreFlightQuotaCheck) {
+            # Pre-flight quota check
+            try {
+                $existingSnapshots = @(Get-TBSnapshot)
+                if ($existingSnapshots.Count -ge 10) {
+                    Write-Warning ('Snapshot quota: {0}/12 snapshot jobs in use. Approaching the 12-job limit.' -f $existingSnapshots.Count)
+                }
             }
-        }
-        catch {
-            Write-TBLog -Message ('Quota pre-flight check skipped: {0}' -f $_.Exception.Message) -Level 'Warning'
+            catch {
+                Write-TBLog -Message ('Quota pre-flight check skipped: {0}' -f $_.Exception.Message) -Level 'Warning'
+            }
         }
 
         Write-TBLog -Message ('Creating snapshot: {0}' -f $DisplayName)
