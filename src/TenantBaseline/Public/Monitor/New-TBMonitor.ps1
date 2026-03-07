@@ -17,6 +17,8 @@ function New-TBMonitor {
         Array of baseline resource objects to monitor.
     .PARAMETER Parameters
         Optional hashtable of key-value pairs for baseline parameter values.
+    .PARAMETER SkipPreFlightQuotaCheck
+        Skips the pre-flight quota check.
     .EXAMPLE
         New-TBMonitor -DisplayName 'MFA Monitor' -Resources $resources
     #>
@@ -39,7 +41,10 @@ function New-TBMonitor {
         [object[]]$Resources,
 
         [Parameter()]
-        [hashtable]$Parameters
+        [hashtable]$Parameters,
+
+        [Parameter()]
+        [switch]$SkipPreFlightQuotaCheck
     )
 
     begin {
@@ -88,15 +93,17 @@ function New-TBMonitor {
         $uri = '{0}/configurationMonitors' -f (Get-TBApiBaseUri)
 
         if ($PSCmdlet.ShouldProcess($DisplayName, 'Create configuration monitor')) {
-            # Pre-flight quota check
-            try {
-                $existingMonitors = @(Get-TBMonitor)
-                if ($existingMonitors.Count -ge 28) {
-                    Write-Warning ('Monitor quota: {0}/30 monitors in use. Approaching the 30-monitor limit.' -f $existingMonitors.Count)
+            if (!$SkipPreFlightQuotaCheck) {
+                # Pre-flight quota check
+                try {
+                    $existingMonitors = @(Get-TBMonitor)
+                    if ($existingMonitors.Count -ge 28) {
+                        Write-Warning ('Monitor quota: {0}/30 monitors in use. Approaching the 30-monitor limit.' -f $existingMonitors.Count)
+                    }
                 }
-            }
-            catch {
-                Write-TBLog -Message ('Quota pre-flight check skipped: {0}' -f $_.Exception.Message) -Level 'Warning'
+                catch {
+                    Write-TBLog -Message ('Quota pre-flight check skipped: {0}' -f $_.Exception.Message) -Level 'Warning'
+                }
             }
 
             Write-TBLog -Message ('Creating monitor: {0}' -f $DisplayName)

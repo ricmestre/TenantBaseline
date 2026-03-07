@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Added parameter `SkipPreFlightQuotaCheck` to cmdlet `New-TBSnapshot` to skip
-  warning
+- Added parameter `SkipPreFlightQuotaCheck` to cmdlet `New-TBSnapshot` and
+  `New-TBMonitor` to skip pre-flight quota check warning
 
 ## [0.3.0] - 2026-02-25
 
